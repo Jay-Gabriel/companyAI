@@ -62,6 +62,19 @@ export function ChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Load initial repository from CLI arguments if present
+  useEffect(() => {
+    const loadCliRepo = async () => {
+      if (window.electronAPI?.getCliRepo) {
+        const repo = await window.electronAPI.getCliRepo();
+        if (repo) {
+          setRootPath(repo);
+        }
+      }
+    };
+    loadCliRepo();
+  }, [setRootPath]);
+
   // Load and index repository files recursively on rootPath change
   useEffect(() => {
     const fetchFiles = async () => {

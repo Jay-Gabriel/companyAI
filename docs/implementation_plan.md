@@ -1,20 +1,38 @@
-# Implementation Plan - PM Code Review Loop and Dynamic Role Filtering
+# Implementation Plan - CLI Terminal Launch Shortcut (company-ide)
 
-We will implement a Product Manager review loop and a dynamic developer role-skipping mechanism based on the PM's plan specifications.
+We will implement a terminal launch shortcut `company-ide`. Users will be able to type `company-ide <path>` in any terminal to launch the Electron app with that directory automatically loaded and indexed.
 
 ## Proposed Changes
 
-### Electron Renderer Components
+### Electron Main Process
+
+#### [MODIFY] [index.ts](file:///home/jay/Desktop/Projects/Company/src/main/index.ts)
+- Register `app:get-cli-repo` IPC handler.
+- Parse `process.argv` to find the first argument that is an existing local directory. Return the absolute path of this directory (or `null` if none).
+
+#### [MODIFY] [preload.ts](file:///home/jay/Desktop/Projects/Company/src/main/preload.ts)
+- Expose the method to Electron API: `getCliRepo: () => ipcRenderer.invoke('app:get-cli-repo')`.
+
+### Electron Renderer Process
+
+#### [MODIFY] [types/index.ts](file:///home/jay/Desktop/Projects/Company/src/renderer/types/index.ts)
+- Declare `getCliRepo` in the `ElectronAPI` interface type definitions.
 
 #### [MODIFY] [ChatPanel.tsx](file:///home/jay/Desktop/Projects/Company/src/renderer/components/ChatPanel.tsx)
-- **PM Planning & Instruction:** When requesting the PM (Alice) to design the plan, append a directive instructing her to state which roles are required at the very start of her response (e.g. `[Required Roles: Frontend]`).
-- **Dynamic Role Skipping:** After the PM planning step is done, parse this required roles header. Filter the list of developers `devsToRun` so that only the requested roles (Frontend and/or Backend) are executed. If a role is not requested, its execution is skipped entirely, saving execution time and API limits.
-- **Meticulous Review Loop:** Run the sequential developer execution and PM code review loop (maximum 2 iterations) for active roles. Feed target files into the PM's review context. If Alice writes `[APPROVED]`, complete the task; otherwise, let devs run a second cycle to fix the listed issues.
+- Add a `useEffect` on mount that queries `window.electronAPI.getCliRepo()`.
+- If a path is returned, set `rootPath` to automatically load and index the workspace.
+
+### System Configuration
+
+#### [NEW] [company-ide](file:///home/jay/.local/bin/company-ide)
+- Create a bash script that:
+  1. Resolves the first CLI argument to an absolute directory path.
+  2. Spawns `npx electron <app-dir> <path>` in the background.
+  3. Disowns/redirects stdout to `/dev/null` to keep the terminal interactive and clean.
 
 ## Verification Plan
 
 ### Manual Verification
-1. Run `npm run dev` to start the app.
-2. Direct the PM to only do Frontend changes (e.g., "Add a Frontend button, no backend needed").
-3. Verify that the PM planning response includes `[Required Roles: Frontend]`.
-4. Verify that only Bob (Frontend Developer) executes in the chat flow, and Charlie (Backend Developer) is completely skipped.
+1. Run `npm run build` to compile the app.
+2. Run `/home/jay/.local/bin/company-ide /home/jay/Desktop/Projects/Company` in terminal.
+3. Confirm that the application opens and automatically loads the workspace repository.

@@ -8,4 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   runCLI: (cliName: string, prompt: string, model?: string, cwd?: string) => ipcRenderer.invoke('app:run-cli', cliName, prompt, model, cwd),
   listFiles: (dirPath: string) => ipcRenderer.invoke('fs:list-files', dirPath),
   cancelCLI: () => ipcRenderer.invoke('app:cancel-cli'),
+  getCliRepo: () => ipcRenderer.invoke('app:get-cli-repo'),
 });

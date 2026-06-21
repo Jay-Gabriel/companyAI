@@ -41,6 +41,7 @@ export interface ElectronAPI {
   runCLI: (cliName: string, prompt: string, model?: string, cwd?: string) => Promise<{ success: boolean; error?: string; stdout?: string }>;
   listFiles: (dirPath: string) => Promise<string[]>;
   cancelCLI: () => Promise<{ success: boolean; error?: string }>;
+  getCliRepo: () => Promise<string | null>;
 }
 
 declare global {

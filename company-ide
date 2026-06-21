@@ -1,0 +1,9 @@
+#!/bin/bash
+# If an argument is provided, resolve it to an absolute path
+REPO_PATH=""
+if [ -n "$1" ]; then
+  REPO_PATH=$(realpath "$1")
+fi
+
+# Run Electron in the background disowned from the terminal
+npx electron /home/jay/Desktop/Projects/Company $REPO_PATH > /dev/null 2>&1 &

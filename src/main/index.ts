@@ -169,6 +169,16 @@ ipcMain.handle('app:run-cli', async (_event, cliName: string, prompt: string, mo
   });
 });
 
+ipcMain.handle('app:get-cli-repo', async () => {
+  const args = process.argv.slice(2);
+  for (const arg of args) {
+    if (fs.existsSync(arg) && fs.statSync(arg).isDirectory()) {
+      return path.resolve(arg);
+    }
+  }
+  return null;
+});
+
 function buildFileTree(dirPath: string) {
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   const tree: any[] = [];
